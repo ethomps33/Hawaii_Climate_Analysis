@@ -1,16 +1,11 @@
+# 1. import Flask
+from flask import Flask, jsonify
 import numpy as np
-
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 
-from flask import Flask, jsonify
-
-
-#################################################
-# Database Setup
-#################################################
 engine = create_engine("sqlite:///hawaii.sqlite")
 
 # reflect an existing database into a new model
@@ -21,67 +16,70 @@ Base.prepare(engine, reflect=True)
 # Save reference to the table
 Measurement = Base.classes.measurement
 Station = Base.classes.station
-
-#################################################
-# Flask Setup
-#################################################
+# 2. Create an app, being sure to pass __name__
 app = Flask(__name__)
 
 
-#################################################
-# Flask Routes
-#################################################
+# 3. Define what to do when a user hits the index route
 
 @app.route("/")
 def Home():
-    """List all available api routes."""
+    print("Server received request for 'Home' page...")
     return (
-        f"Available Routes:<br/>"
-        f"/api/v1.0/precipitation<br/>"
-        f"/api/v1.0/stations<br/>"
-        f"/api/v1.0/tobs<br/>"
-    )
+        f"Available Routes:<br>"
+        f"/api/v1.0/precipitation<br>"
+        f"/api/v1.0/stations<br>"
+        f"/api/v1.0/tobs<br>"
+    
+    )  
 
 
-# @app.route("/api/v1.0/precipitation")
-# def prcp():
-#     # Create our session (link) from Python to the DB
-#     session = Session(engine)
+# 4. Define what to do when a user hits the /about route
+@app.route("/api/v1.0/precipitation")
+def prcp():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
 
-#     """Return a list of all passenger names"""
-#     # Query all passengers
-#     results = session.query(Measurement.).all()
+    # Query all passengers
+    results = session.query(Measurement.date, Measurement.prcp).all()
 
-#     session.close()
+    session.close()
 
-#     # Convert list of tuples into normal list
-#     all_names = list(np.ravel(results))
+    # Convert list of tuples into normal list
+    all_prcp = []
+    for date, prcp in results:
+        prcp_dict = {}
+        prcp_dict["date"] = date
+        prcp_dict["prcp"] = prcp
+        all_prcp.append(prcp_dict)
 
-#     return jsonify(all_names)
+    return jsonify(all_prcp)
+@app.route("/api/v1.0/stations")
+def station():
+    session = Session(engine)
 
+    results = session.query(Station.station).all()
 
-# @app.route("/api/v1.0/passengers")
-# def passengers():
-#     # Create our session (link) from Python to the DB
-#     session = Session(engine)
+    all_stations = list(np.ravel(results))
 
-#     """Return a list of passenger data including the name, age, and sex of each passenger"""
-#     # Query all passengers
-#     results = session.query(Passenger.name, Passenger.age, Passenger.sex).all()
+    return jsonify(all_stations)
 
-#     session.close()
+@app.route("/api/v1.0/tobs")
+def tobs():
+    session = Session(engine)
 
-#     # Create a dictionary from the row data and append to a list of all_passengers
-#     all_passengers = []
-#     for name, age, sex in results:
-#         passenger_dict = {}
-#         passenger_dict["name"] = name
-#         passenger_dict["age"] = age
-#         passenger_dict["sex"] = sex
-#         all_passengers.append(passenger_dict)
+    last_date = dt.datetime(2017, 8, 23) - dt.timedelta(days = 365)
 
-#     return jsonify(all_passengers)
+    active_temp = session.query(Measurement.date, Measurement.tobs).\
+        filter(Measurement.station == 'USC00519523').\
+        filter(Measurement.date >= last_date).\
+        order_by(desc(Measurement.date)).all()
 
+    session.close()
 
-if __name__ == '__main__':
+    tobs_list = list(np.ravel(active_temp))
+
+    return jsonify(tobs_list)
+if __name__ == "__main__":
     app.run(debug=True)
+
