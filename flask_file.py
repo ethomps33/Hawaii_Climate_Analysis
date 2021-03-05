@@ -34,7 +34,7 @@ def Home():
     )  
 
 
-# 4. Define what to do when a user hits the /about route
+# 4. Define what to do when a user hits the /precipitation route
 @app.route("/api/v1.0/precipitation")
 def prcp():
     # Create our session (link) from Python to the DB
@@ -80,6 +80,10 @@ def tobs():
     tobs_list = list(np.ravel(active_temp))
 
     return jsonify(tobs_list)
+
+@app.route("/api/v1.0/<start>")
+def start():
+    
 if __name__ == "__main__":
     app.run(debug=True)
 
