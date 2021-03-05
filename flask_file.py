@@ -4,7 +4,8 @@ import numpy as np
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, desc
+import datetime as dt
 
 engine = create_engine("sqlite:///hawaii.sqlite")
 
@@ -83,7 +84,23 @@ def tobs():
 
 @app.route("/api/v1.0/<start>")
 def start():
-    
+    session = Session(engine)
+
+    temps = session.execute("SELECT MIN(tobs), MAX(tobs), AVG(tobs) FROM Measurement WHERE date > '2013-04-01'").fetchall()
+
+    temps_start = list(np.ravel(temps))
+
+    return jsonify(temps_start)
+
+@app.route("/api/v1.0/<start>/<end>")
+def start_end():
+    session = Session(engine)
+
+    temps = session.execute("SELECT MIN(tobs), MAX(tobs), AVG(tobs) FROM Measurement WHERE date > '2013-04-01' AND date < 2015-01-01").fetchall()
+
+    temps_end = list(np.ravel(temps))
+
+    return jsonify(temps_end)
 if __name__ == "__main__":
     app.run(debug=True)
 
