@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func, desc
 import datetime as dt
 
-engine = create_engine("sqlite:///hawaii.sqlite")
+engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 
 # reflect an existing database into a new model
 Base = automap_base()
@@ -72,7 +72,7 @@ def tobs():
     last_date = dt.datetime(2017, 8, 23) - dt.timedelta(days = 365)
 
     active_temp = session.query(Measurement.date, Measurement.tobs).\
-        filter(Measurement.station == 'USC00519523').\
+        filter(Measurement.station == 'USC00519281').\
         filter(Measurement.date >= last_date).\
         order_by(desc(Measurement.date)).all()
 
